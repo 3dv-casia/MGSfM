@@ -47,6 +47,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Setup vcpkg
+        uses: microsoft/vcpkg-action@v2
+        with:
+          vcpkgCommitId: 'latest'
+          cache: true
+
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
@@ -62,6 +68,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
         -S ${{ github.workspace }}
 
     - name: Build
