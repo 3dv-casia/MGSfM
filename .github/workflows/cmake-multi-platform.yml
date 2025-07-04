@@ -51,11 +51,12 @@ jobs:
       id: vcpkg
       uses: johnwason/vcpkg-action@v7
       with:
-        vcpkgDirectory: vcpkg
-        vcpkgGitURL: https://github.com/microsoft/vcpkg.git
-        vcpkgGitCommitId: 768f6a3ad9f9b6c4c2ff390137690cf26e3c3453
+        manifest-dir: ${{ github.workspace }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        revision: 768f6a3ad9f9b6c4c2ff390137690cf26e3c3453
+        vcpkg-subdir: vcpkg
         runVcpkgInstall: true
-        doNotCache: false
+        disable-cache: false
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
