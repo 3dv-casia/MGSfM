@@ -55,7 +55,6 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         revision: 768f6a3ad9f9b6c4c2ff390137690cf26e3c3453
         vcpkg-subdir: vcpkg
-        runVcpkgInstall: true
         disable-cache: false
 
     - name: Set reusable strings
