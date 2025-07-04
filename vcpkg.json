@@ -3,6 +3,7 @@
     "description": "MGSfM is an efficient, robust, and scalable global Structure-from-Motion pipeline designed for sequential images captured by multi-camera or single-camera systems. Building on [GLOMAP](https://github.com/colmap/glomap), it takes a COLMAP database as input and outputs a COLMAP-format sparse reconstruction. Compared to GLOMAP, MGSfM delivers faster and more robust translation averaging, with equal or superior reconstruction quality and consume less resident memory.",
     "homepage": "https://github.com/3dv-casia/MGSfM",
     "license": "BSD-3-Clause",
+    "builtin-baseline": "768f6a3ad9f9b6c4c2ff390137690cf26e3c3453",
     "supports": "(linux | (windows & !static) | osx) & (x86 | x64 | arm64)",
     "dependencies": [
         "boost-algorithm",
