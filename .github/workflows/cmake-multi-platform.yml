@@ -48,10 +48,10 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Setup vcpkg
-        uses: microsoft/vcpkg-action@v2
-        with:
-          vcpkgCommitId: 'latest'
-          cache: true
+      uses: microsoft/vcpkg-action@v2
+      with:
+        vcpkgCommitId: 'latest'
+        cache: true
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
