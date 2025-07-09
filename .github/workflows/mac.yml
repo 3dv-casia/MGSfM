@@ -1,0 +1,94 @@
+name: Mac
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [ assigned, opened, synchronize, reopened ]
+  release:
+    types: [ published, edited ]
+
+jobs:
+  build:
+    name: ${{ matrix.config.os }} ${{ matrix.config.arch }} ${{ matrix.config.cmakeBuildType }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        config: [
+          {
+            os: macos-14,
+            arch: arm64,
+            cmakeBuildType: Release,
+          },
+        ]
+
+    env:
+      COMPILER_CACHE_VERSION: 1
+      COMPILER_CACHE_DIR: ${{ github.workspace }}/compiler-cache
+      CCACHE_DIR: ${{ github.workspace }}/compiler-cache/ccache
+      CCACHE_BASEDIR: ${{ github.workspace }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        id: cache-builds
+        with:
+          key: v${{ env.COMPILER_CACHE_VERSION }}-${{ matrix.config.os }}-${{ matrix.config.arch }}-${{ matrix.config.cmakeBuildType }}-${{ github.run_id }}-${{ github.run_number }}
+          restore-keys: v${{ env.COMPILER_CACHE_VERSION }}-${{ matrix.config.os }}-${{ matrix.config.arch }}-${{ matrix.config.cmakeBuildType }}
+          path: ${{ env.COMPILER_CACHE_DIR }}
+
+      - name: Setup Mac
+        run: |
+          brew install \
+            cmake \
+            ninja \
+            boost \
+            eigen \
+            flann \
+            freeimage \
+            metis \
+            glog \
+            googletest \
+            ceres-solver \
+            qt@5 \
+            glew \
+            cgal \
+            sqlite3 \
+            ccache \
+            libomp \
+            llvm
+
+      - name: Configure and build
+        env:
+          LDFLAGS:  "-L$(brew --prefix libomp)/lib"
+          CPPFLAGS: "-I$(brew --prefix libomp)/include"
+        run: |
+          export PATH="$(brew --prefix llvm)/bin:/opt/homebrew/bin:$PATH"
+          which cmake
+          cmake --version
+          mkdir build
+          cd build
+          cmake .. \
+            -GNinja \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config.cmakeBuildType }} \
+            -DTESTS_ENABLED=ON \
+            -DCMAKE_PREFIX_PATH="$(brew --prefix qt@5)" \
+            -DCMAKE_C_FLAGS="-Xpreprocessor -fopenmp" \
+            -DCMAKE_CXX_FLAGS="-Xpreprocessor -fopenmp"
+          ninja
+
+      - name: Run tests
+        run: |
+          cd build
+          set +e
+          ctest --output-on-failure -E .+colmap_.*
+
+      - name: Cleanup compiler cache
+        run: |
+          set -x
+          ccache --show-stats --verbose
+          ccache --evict-older-than 1d
+          ccache --show-stats --verbose
