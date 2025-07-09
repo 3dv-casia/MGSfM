@@ -56,10 +56,12 @@ jobs:
             cgal \
             sqlite3 \
             ccache \
-            libomp
+            libomp \
+            llvm
 
       - name: Configure and build
         env:
+          PATH: "$(brew --prefix llvm)/bin:${{ env.PATH }}"
           LDFLAGS:  "-L$(brew --prefix libomp)/lib"
           CPPFLAGS: "-I$(brew --prefix libomp)/include"
         run: |
@@ -68,6 +70,8 @@ jobs:
           cd build
           cmake .. \
             -GNinja \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_BUILD_TYPE=${{ matrix.config.cmakeBuildType }} \
             -DTESTS_ENABLED=ON \
             -DCMAKE_PREFIX_PATH="$(brew --prefix qt@5)" \

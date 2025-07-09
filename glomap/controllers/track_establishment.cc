@@ -179,7 +179,6 @@ void TrackEngine::TrackCollectionV2(
   uf_.GetConnectedComponents(track_map);
 
   size_t counter = 0;
-  size_t discarded_counter = 0;
   for (auto& [track_id, correspondence_set] : track_map) {
     const uint32_t print_counter_track =
         std::max<uint32_t>(track_map.size() / 10, 1);
@@ -207,7 +206,6 @@ void TrackEngine::TrackCollectionV2(
         }
         if (is_inconsistent) {
           track.observations.clear();
-          discarded_counter++;
           break;
         }
       }
