@@ -102,7 +102,7 @@ bool MultiGlobalMapper::Solve(const colmap::Database& database,
   // poses from reference camera to local camera
   std::unordered_map<camera_t, Rigid3d> rel_from_refs;
   // Set camera 1 as reference camera
-  for (const auto [camera_id, camera] : cameras) {
+  for (const auto& [camera_id, camera] : cameras) {
     rel_from_refs[camera_id] = Rigid3d();
   }
 

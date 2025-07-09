@@ -55,9 +55,13 @@ jobs:
             glew \
             cgal \
             sqlite3 \
-            ccache
+            ccache \
+            libomp
 
       - name: Configure and build
+        env:
+          LDFLAGS:  "-L$(brew --prefix libomp)/lib"
+          CPPFLAGS: "-I$(brew --prefix libomp)/include"
         run: |
           cmake --version
           mkdir build
@@ -66,7 +70,9 @@ jobs:
             -GNinja \
             -DCMAKE_BUILD_TYPE=${{ matrix.config.cmakeBuildType }} \
             -DTESTS_ENABLED=ON \
-            -DCMAKE_PREFIX_PATH="$(brew --prefix qt@5)"
+            -DCMAKE_PREFIX_PATH="$(brew --prefix qt@5)" \
+            -DCMAKE_C_FLAGS="-Xpreprocessor -fopenmp" \
+            -DCMAKE_CXX_FLAGS="-Xpreprocessor -fopenmp"
           ninja
 
       - name: Run tests
