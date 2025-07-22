@@ -97,7 +97,6 @@ class MultiRotationEstimator {
     Eigen::Quaterniond best_median_rotation;
     double min_median_error = std::numeric_limits<double>::max();
 
-#pragma omp parallel for schedule(dynamic)
     for (const auto& id : all_random_ids) {
       Eigen::Quaterniond median_rotation = rotations.at(id);
 
@@ -124,7 +123,6 @@ class MultiRotationEstimator {
         const double norm = median_residual_vec.norm();
         if (norm < kEpsilon) {
           median_error = colmap::Median(angle_errors);
-#pragma omp critical
           if (median_error < min_median_error) {
             best_median_rotation = median_rotation;
             min_median_error = median_error;
