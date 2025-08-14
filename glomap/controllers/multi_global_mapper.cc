@@ -199,8 +199,35 @@ bool MultiGlobalMapper::Solve(const colmap::Database& database,
     std::cout << "-------------------------------------" << std::endl;
     colmap::Timer run_timer;
     run_timer.Start();
-    {
-      LOG(INFO) << "Running single rotation averaging ...";
+    if (cameras.size() == 1) {
+      RotationEstimator ra_engine(options_.opt_ra);
+      // The first run is for filtering
+      ra_engine.EstimateRotations(view_graph, images);
+
+      RelPoseFilter::FilterRotations(
+          view_graph, images, options_.inlier_thresholds.max_rotation_error);
+      if (view_graph.KeepLargestConnectedComponents(images) == 0) {
+        LOG(ERROR) << "no connected components are found";
+        return false;
+      }
+
+      // The second run is for final estimation
+      if (!ra_engine.EstimateRotations(view_graph, images)) {
+        return false;
+      }
+      RelPoseFilter::FilterRotations(
+          view_graph, images, options_.inlier_thresholds.max_rotation_error);
+      image_t num_img = view_graph.KeepLargestConnectedComponents(images);
+      if (num_img == 0) {
+        LOG(ERROR) << "no connected components are found";
+        return false;
+      }
+      LOG(INFO) << num_img << " / " << images.size()
+                << " images are within the connected component." << std::endl;
+
+      run_timer.PrintSeconds();
+    } else {
+      LOG(INFO) << "Running common rotation averaging ...";
 
       auto single_view_graph = view_graph;
       single_view_graph.KeepLargestConnectedComponents(images);
@@ -241,13 +268,12 @@ bool MultiGlobalMapper::Solve(const colmap::Database& database,
       }
       // Update the is_registered flag of all images
       MultiKeepLargestConnectedComponents(view_graph, images, image_ref_id);
-    }
-    run_timer.PrintSeconds();
-    {
+      run_timer.PrintSeconds();
+
       LOG(INFO) << "Running multiple rotation averaging ...";
-      MultiRotationEstimator ra_engine(options_.opt_mre);
+      MultiRotationEstimator mra_engine(options_.opt_mre);
       // The first run is for filtering
-      ra_engine.EstimateRotations(
+      mra_engine.EstimateRotations(
           view_graph, images, rel_from_refs, image_ref_id);
 
       RelPoseFilter::FilterRotations(
